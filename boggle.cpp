@@ -69,7 +69,6 @@ std::pair<std::set<std::string>, std::set<std::string> > parseDict(std::string f
 			prefix.insert(word.substr(0,i));
 		}
 	}
-	prefix.insert("");
 	return make_pair(dict, prefix);
 }
 
@@ -90,40 +89,29 @@ std::set<std::string> boggle(const std::set<std::string>& dict, const std::set<s
 }
 
 bool boggleHelper(const std::set<std::string>& dict, const std::set<std::string>& prefix, const std::vector<std::vector<char> >& board, 
-								   std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
+                  std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
 {
-//add your solution here!
-	if (c >= board.size() || r >= board.size()) {
+    if (r >= board.size() || c >= board[0].size())   // Check if it is out of bounds
+    {
+        return false;
+    }
+    word += board[r][c]; //add the character to the word
+    if (prefix.find(word) != prefix.end()) //check if it's in the set
+    {
+        if (boggleHelper(dict, prefix, board, word, result, r + dr, c + dc, dr, dc)) //recurse to the next position
+        {
+            return true; //if found, return true
+        }
+				if (dict.find(word) != dict.end())  // check if the word is valid
+        {
+            result.insert(word); //insert it to the result set and return true
+            return true;
+        }
+    }
+    else if (dict.find(word) != dict.end()) //check if the word is a valid word
+    {
+        result.insert(word); //add to the set and return false
+        return true;
+    }
 		return false;
-	}
-
-	word += board[r][c];
-
-	if (prefix.find(word) != prefix.end())
-	{
-		unsigned int newC = dc+c;
-		unsigned int newR = dr+r;
-
-		if (boggleHelper(dict, prefix, board, word, result, newR, newC, dr, dc))
-		{
-			return true;
-		}
-
-		if (dict.find(word) != dict.end())
-		{
-			result.insert(word);
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	if (dict.find(word) != dict.end())
-	{
-		result.insert(word);
-		return true;
-	}
-	else {
-		return false;
-	}
 }
