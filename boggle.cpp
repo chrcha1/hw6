@@ -1,3 +1,4 @@
+#ifndef RECCHECK
 #include <iostream>
 #include <vector>
 #include <string>
@@ -6,6 +7,7 @@
 #include <iomanip>
 #include <fstream>
 #include <exception>
+#endif
 
 #include "boggle.h"
 
@@ -69,6 +71,7 @@ std::pair<std::set<std::string>, std::set<std::string> > parseDict(std::string f
 			prefix.insert(word.substr(0,i));
 		}
 	}
+	prefix.insert("");
 	return make_pair(dict, prefix);
 }
 
@@ -89,29 +92,44 @@ std::set<std::string> boggle(const std::set<std::string>& dict, const std::set<s
 }
 
 bool boggleHelper(const std::set<std::string>& dict, const std::set<std::string>& prefix, const std::vector<std::vector<char> >& board, 
-                  std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
+								   std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
 {
-    if (r >= board.size() || c >= board[0].size())   // Check if it is out of bounds
+//add your solution here!
+
+  // BASE CASE
+	//  If the word is not a prefix of another word, or if we've gone off the board, then we're done
+  if (r >= board.size() || c >= board.size() || prefix.find(word) == prefix.end())
+  {
+		// The word is in the dictionary, so we found a longest word
+    if (dict.find(word) != dict.end())
     {
-        return false;
+			// Add the word to the result set
+      result.insert(word);
+      return true;
     }
-    word += board[r][c]; //add the character to the word
-    if (prefix.find(word) != prefix.end()) //check if it's in the set
+    else
     {
-        if (boggleHelper(dict, prefix, board, word, result, r + dr, c + dc, dr, dc)) //recurse to the next position
-        {
-            return true; //if found, return true
-        }
-				if (dict.find(word) != dict.end())  // check if the word is valid
-        {
-            result.insert(word); //insert it to the result set and return true
-            return true;
-        }
+			// The word is not in the dictionary, so we didn't find a longest word
+      return false;
     }
-    else if (dict.find(word) != dict.end()) //check if the word is a valid word
+  }
+
+  // RECURSIVE CASE
+	// In this case, we're going to try to extend the word in all four directions (up, down, left, right)
+	// If we find a word in any of those directions, then we're done
+  if (!boggleHelper(dict, prefix, board, word + board[r][c], result, r + dr, c + dc, dr, dc))
+  {
+    if (dict.find(word) != dict.end())
     {
-        result.insert(word); //add to the set and return false
-        return true;
+      result.insert(word);
+      return true;
     }
-		return false;
+    else
+    {
+      return false;
+    }
+  }
+
+  return true;
+
 }
